@@ -20,6 +20,8 @@ class Request() extends Actor with ActorLogging {
 
   val requestId = UUID.fromString(self.path.name)
 
+  MDC.put("requestId", requestId.toString)
+
   private val orderManagement = createOrderManagement()
   private val paymentProcessor = createPaymentProcessor()
   private val shipping = createShipping()
@@ -61,26 +63,29 @@ class Request() extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case BeginRequest(_) =>
-      MDC.put("requestId", requestId.toString)
       log.info("Begin Request")
+      MDC.put("requestId", requestId.toString)
       orderManagement ! OrderManagement.CreateOrder
       context.become(creatingOrder(sender()))
   }
 
   private def creatingOrder(origin: ActorRef): Receive = {
     case OrderManagement.OrderCreated(orderId, amount) =>
+      MDC.put("requestId", requestId.toString)
       paymentProcessor ! PaymentProcessor.CompletePayment(amount)
       context.become(requestingPayment(origin, orderId))
   }
 
   private def requestingPayment(origin: ActorRef, orderId: UUID): Receive = {
     case PaymentProcessor.PaymentCompleted(amount) =>
+      MDC.put("requestId", requestId.toString)
       shipping ! Shipping.ShipOrder(orderId)
       context.become(shippingOrder(origin))
   }
 
   private def shippingOrder(origin: ActorRef): Receive = {
     case Shipping.OrderShipped(orderId) =>
+      MDC.put("requestId", requestId.toString)
       origin ! RequestCompleted(requestId)
       context.become(receive)
   }
