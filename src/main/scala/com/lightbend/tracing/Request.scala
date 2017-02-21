@@ -34,6 +34,8 @@ class Request() extends Actor with ActorLogging {
   private val paymentProcessor = createPaymentProcessor()
   private val shipping = createShipping()
 
+  // This uses Cluster Singleton to verify whether or not MDC will transfer
+  // to a singleton.
   protected def createOrderManagement() = {
     context.actorOf(ClusterSingletonProxy.props(
       "/user/order-management",
@@ -41,10 +43,13 @@ class Request() extends Actor with ActorLogging {
     ))
   }
 
+  // This uses a local actor to verify whether or not MDC will transfer locally.
   protected def createPaymentProcessor() = {
     context.actorOf(PaymentProcessor.props(), "payment-processor")
   }
 
+  // This uses Cluster Sharding to verify whether or not MDC will transfer
+  // to a sharded actor.
   protected def createShipping() = {
     ClusterSharding(context.system).start(
       "shipping",
