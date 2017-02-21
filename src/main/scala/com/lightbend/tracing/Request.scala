@@ -5,6 +5,7 @@ import java.util.UUID
 import akka.actor.{ActorLogging, Props, ActorRef, Actor}
 import akka.cluster.sharding.ShardRegion.MessageExtractor
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
+import akka.cluster.singleton.{ClusterSingletonProxySettings, ClusterSingletonProxy, ClusterSingletonManager}
 import org.slf4j.MDC
 
 object Request {
@@ -34,7 +35,10 @@ class Request() extends Actor with ActorLogging {
   private val shipping = createShipping()
 
   protected def createOrderManagement() = {
-    context.actorOf(OrderManagement.props(), "order-management")
+    context.actorOf(ClusterSingletonProxy.props(
+      "/user/order-management",
+      ClusterSingletonProxySettings(context.system)
+    ))
   }
 
   protected def createPaymentProcessor() = {
