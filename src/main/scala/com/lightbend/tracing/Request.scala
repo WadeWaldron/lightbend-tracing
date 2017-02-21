@@ -20,16 +20,6 @@ class Request() extends Actor with ActorLogging {
 
   val requestId = UUID.fromString(self.path.name)
 
-  private val messageExtractor = new MessageExtractor {
-    override def entityId(message: Any): String = message match {
-      case Shipping.ShipOrder(orderId) => orderId.toString
-    }
-    override def shardId(message: Any): String = message match {
-      case Shipping.ShipOrder(orderId) => (Math.abs(orderId.hashCode()) % 10).toString
-    }
-    override def entityMessage(message: Any): Any = message
-  }
-
   private val orderManagement = createOrderManagement()
   private val paymentProcessor = createPaymentProcessor()
   private val shipping = createShipping()
@@ -51,6 +41,16 @@ class Request() extends Actor with ActorLogging {
   // This uses Cluster Sharding to verify whether or not MDC will transfer
   // to a sharded actor.
   protected def createShipping() = {
+    val messageExtractor = new MessageExtractor {
+      override def entityId(message: Any): String = message match {
+        case Shipping.ShipOrder(orderId) => orderId.toString
+      }
+      override def shardId(message: Any): String = message match {
+        case Shipping.ShipOrder(orderId) => (Math.abs(orderId.hashCode()) % 10).toString
+      }
+      override def entityMessage(message: Any): Any = message
+    }
+
     ClusterSharding(context.system).start(
       "shipping",
       Shipping.props(),
