@@ -3,6 +3,8 @@ package com.lightbend.tracing
 import java.util.UUID
 
 import akka.actor.{ActorLogging, Props, ActorRef, Actor}
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.pubsub.DistributedPubSubMediator.{Subscribe, Publish}
 import akka.cluster.sharding.ShardRegion.MessageExtractor
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
 import akka.cluster.singleton.{ClusterSingletonProxySettings, ClusterSingletonProxy, ClusterSingletonManager}
@@ -22,7 +24,9 @@ class Request() extends Actor with ActorLogging {
 
   MDC.put("requestId", requestId.toString)
 
+  private val mediator = DistributedPubSub(context.system).mediator
   private val orderManagement = createOrderManagement()
+  private val validation = createValidation()
   private val paymentProcessor = createPaymentProcessor()
   private val shipping = createShipping()
 
@@ -33,6 +37,16 @@ class Request() extends Actor with ActorLogging {
       "/user/order-management",
       ClusterSingletonProxySettings(context.system)
     ))
+  }
+
+  // This actor will use a pub/sub model to verify if MDC will transfer
+  // over distributed pub/sub
+  protected def createValidation() = {
+    val validations = context.actorOf(Validation.props(), "validation")
+
+    mediator ! Subscribe(s"Validations$requestId", validations)
+
+    validations
   }
 
   // This uses a local actor to verify whether or not MDC will transfer locally.
@@ -71,6 +85,13 @@ class Request() extends Actor with ActorLogging {
 
   private def creatingOrder(origin: ActorRef): Receive = {
     case OrderManagement.OrderCreated(orderId, amount) =>
+      MDC.put("requestId", requestId.toString)
+      mediator ! Publish(s"Validations$requestId", Validation.Validate(orderId, amount))
+      context.become(validatingOrder(origin))
+  }
+
+  private def validatingOrder(origin: ActorRef): Receive = {
+    case Validation.Validated(orderId, amount) =>
       MDC.put("requestId", requestId.toString)
       paymentProcessor ! PaymentProcessor.CompletePayment(amount)
       context.become(requestingPayment(origin, orderId))
