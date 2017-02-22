@@ -29,3 +29,5 @@ libraryDependencies ++= Seq(
 
 addCommandAlias("consume", "runMain com.lightbend.tracing.Consumer -Dakka.remote.netty.tcp.port=2551")
 addCommandAlias("produce", "runMain com.lightbend.tracing.Producer -Dakka.remote.netty.tcp.port=2552")
+addCommandAlias("consume2", "runMain com.lightbend.tracing.Consumer -Dakka.remote.netty.tcp.port=2553")
+addCommandAlias("produce2", "runMain com.lightbend.tracing.Producer -Dakka.remote.netty.tcp.port=2554")

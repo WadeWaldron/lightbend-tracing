@@ -23,13 +23,16 @@ object Producer extends App {
 
   implicit val timeout = Timeout(10.seconds)
 
-  val cancellable = system.scheduler.schedule(1.second, 1.second) {
+  val cancellable = system.scheduler.schedule(1.second, 0.millisecond) {
     val id = UUID.randomUUID()
     val request = system.actorOf(Request.props(mediator), id.toString)
     request ! Request.BeginRequest(id)
   }
 
-  system.scheduler.scheduleOnce(10.seconds) {
+  sys.addShutdownHook {
+    println("-------------")
+    println("SHUTTING DOWN")
+    println("-------------")
     cancellable.cancel()
     system.terminate()
   }
@@ -43,7 +46,6 @@ object Consumer extends App {
   }
 
   val system = ActorSystem("Tracing")
-  import system.dispatcher
 
   val mediator = DistributedPubSub(system).mediator
 
@@ -52,12 +54,15 @@ object Consumer extends App {
   val paymentProcessor = system.actorOf(PaymentProcessor.props(), "payment-processor")
   val shipping = system.actorOf(Shipping.props(), "shipping")
 
-  mediator ! Subscribe(s"Validations", validation)
-  mediator ! Subscribe(s"Orders", orderManagement)
-  mediator ! Subscribe(s"Payments", paymentProcessor)
-  mediator ! Subscribe(s"Shipments", shipping)
+  mediator ! Subscribe(s"Validations", group = Some("Consumer"), validation)
+  mediator ! Subscribe(s"Orders", group = Some("Consumer"), orderManagement)
+  mediator ! Subscribe(s"Payments", group = Some("Consumer"), paymentProcessor)
+  mediator ! Subscribe(s"Shipments", group = Some("Consumer"), shipping)
 
-  system.scheduler.scheduleOnce(60.seconds) {
+  sys.addShutdownHook {
+    println("-------------")
+    println("SHUTTING DOWN")
+    println("-------------")
     system.terminate()
   }
 }

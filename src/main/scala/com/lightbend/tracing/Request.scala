@@ -25,25 +25,25 @@ class Request(mediator: ActorRef) extends Actor with ActorLogging {
   private def idle: Receive = {
     case BeginRequest(_) =>
       log.info("Begin Request")
-      mediator ! Publish(s"Orders", OrderManagement.CreateOrder)
+      mediator ! Publish(s"Orders", OrderManagement.CreateOrder, sendOneMessageToEachGroup = true)
       context.become(creatingOrder(sender()))
   }
 
   private def creatingOrder(origin: ActorRef): Receive = {
     case OrderManagement.OrderCreated(orderId, amount) =>
-      mediator ! Publish(s"Validations", Validation.Validate(orderId, amount))
+      mediator ! Publish(s"Validations", Validation.Validate(orderId, amount), sendOneMessageToEachGroup = true)
       context.become(validatingOrder(origin))
   }
 
   private def validatingOrder(origin: ActorRef): Receive = {
     case Validation.Validated(orderId, amount) =>
-      mediator ! Publish(s"Payments", PaymentProcessor.CompletePayment(amount))
+      mediator ! Publish(s"Payments", PaymentProcessor.CompletePayment(amount), sendOneMessageToEachGroup = true)
       context.become(requestingPayment(origin, orderId))
   }
 
   private def requestingPayment(origin: ActorRef, orderId: UUID): Receive = {
     case PaymentProcessor.PaymentCompleted(amount) =>
-      mediator ! Publish(s"Shipments", Shipping.ShipOrder(orderId))
+      mediator ! Publish(s"Shipments", Shipping.ShipOrder(orderId), sendOneMessageToEachGroup = true)
       context.become(shippingOrder(origin))
   }
 
