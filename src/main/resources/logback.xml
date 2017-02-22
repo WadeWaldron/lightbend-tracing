@@ -2,14 +2,14 @@
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%X{requestId}] %date{HH:mm:ss} %-5level [%X{akkaSource}] - %msg%n</pattern>
+            <pattern>%date{HH:mm:ss} %-5level [REQUEST: %X{requestId}] - %msg [%X{akkaSource}] %n</pattern>
         </encoder>
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>${coffee-house.log-file:-coffee-house.log}</file>
+        <file>tracing.log</file>
         <encoder>
-            <pattern>%date{HH:mm:ss} %-5level [%X{akkaSource}] - %msg%n</pattern>
+            <pattern>%date{HH:mm:ss} %-5level [REQUEST: %X{requestId}] - %msg [%X{akkaSource}] %n</pattern>
         </encoder>
     </appender>
 
@@ -20,7 +20,6 @@
 
     <root level="warn">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
     </root>
 
 </configuration>

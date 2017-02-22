@@ -26,3 +26,6 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
+
+addCommandAlias("consume", "runMain com.lightbend.tracing.Consumer -Dakka.remote.netty.tcp.port=2551")
+addCommandAlias("produce", "runMain com.lightbend.tracing.Producer -Dakka.remote.netty.tcp.port=2552")
