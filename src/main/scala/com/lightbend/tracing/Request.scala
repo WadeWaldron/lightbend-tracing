@@ -4,7 +4,6 @@ import java.util.UUID
 
 import akka.actor._
 import akka.cluster.pubsub.DistributedPubSubMediator.Publish
-import com.lightbend.cinnamon.akka.Tracer
 import org.slf4j.MDC
 
 object Request {
@@ -23,12 +22,10 @@ class Request(mediator: ActorRef) extends Actor with ActorLogging {
 
   private def idle: Receive = {
     case BeginRequest(_) =>
-      Tracer(context.system).start("request.duration") {
-        MDC.put("requestId", requestId.toString)
-        log.info("Begin Request")
-        mediator ! Publish(s"Orders", OrderManagement.CreateOrder, sendOneMessageToEachGroup = true)
-        context.become(creatingOrder(sender()))
-      }
+      MDC.put("requestId", requestId.toString)
+      log.info("Begin Request")
+      mediator ! Publish(s"Orders", OrderManagement.CreateOrder, sendOneMessageToEachGroup = true)
+      context.become(creatingOrder(sender()))
   }
 
   private def creatingOrder(origin: ActorRef): Receive = {
@@ -53,7 +50,6 @@ class Request(mediator: ActorRef) extends Actor with ActorLogging {
     case Shipping.OrderShipped(orderId) =>
       log.info("Request Completed")
       origin ! RequestCompleted(requestId)
-      Tracer(context.system).end("request.duration")
       context.stop(self)
   }
 }

@@ -7,7 +7,6 @@ import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.Subscribe
 import akka.util.Timeout
 import akka.pattern.ask
-import com.lightbend.cinnamon.akka.Tracer
 
 import scala.concurrent.duration._
 import scala.util.Random
@@ -30,11 +29,7 @@ object Producer extends App {
     val id = UUID.randomUUID()
     val request = system.actorOf(Request.props(mediator), id.toString)
 
-    val future = Tracer(system).start("request.processingTime") {
-      request ? Request.BeginRequest(id)
-    }
-
-    future.onComplete(_ => Tracer(system).end("request.processingTime"))
+    request ? Request.BeginRequest(id)
   }
 
   val bursts = system.scheduler.schedule(30.seconds, 30.seconds) {
@@ -42,11 +37,7 @@ object Producer extends App {
       val id = UUID.randomUUID()
       val request = system.actorOf(Request.props(mediator), id.toString)
 
-      val future = Tracer(system).start("request.processingTime") {
-        request ? Request.BeginRequest(id)
-      }
-
-      future.onComplete(_ => Tracer(system).end("request.processingTime"))
+      request ? Request.BeginRequest(id)
     }
   }
 
