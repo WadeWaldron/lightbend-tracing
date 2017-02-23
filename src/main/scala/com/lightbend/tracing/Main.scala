@@ -23,7 +23,7 @@ object Producer extends App {
 
   implicit val timeout = Timeout(10.seconds)
 
-  val cancellable = system.scheduler.schedule(1.second, 0.millisecond) {
+  val cancellable = system.scheduler.schedule(1.second, 100.millisecond) {
     val id = UUID.randomUUID()
     val request = system.actorOf(Request.props(mediator), id.toString)
     request ! Request.BeginRequest(id)

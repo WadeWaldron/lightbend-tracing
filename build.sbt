@@ -22,6 +22,7 @@ libraryDependencies ++= Seq(
   "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8",
 
   Cinnamon.library.cinnamonSlf4jMdc,
+  Cinnamon.library.cinnamonSandbox,
 
   "ch.qos.logback" % "logback-classic" % "1.2.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
