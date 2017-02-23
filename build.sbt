@@ -11,7 +11,7 @@ cinnamon in run := true
 cinnamon in test := true
 cinnamonLogLevel := "INFO"
 
-fork := true
+fork in run := true
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion withSources(),
@@ -24,6 +24,7 @@ libraryDependencies ++= Seq(
 
   Cinnamon.library.cinnamonSlf4jMdc,
   Cinnamon.library.cinnamonSandbox,
+  Cinnamon.library.cinnamonCHMetricsJvmMetrics,
 
   "ch.qos.logback" % "logback-classic" % "1.2.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
