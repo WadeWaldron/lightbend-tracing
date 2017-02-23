@@ -7,20 +7,20 @@ object PaymentProcessor {
   case class CompletePayment(amount: Float)
   case class PaymentCompleted(amount: Float)
 
-  def props(mode: Mode): Props = Props(new PaymentProcessor(mode))
+  def props(blocking: Boolean = false): Props = Props(new PaymentProcessor(blocking))
 
   trait Mode
   case object Normal extends Mode
   case object Blocking extends Mode
 }
 
-class PaymentProcessor(mode: Mode = PaymentProcessor.Normal) extends Actor with ActorLogging {
+class PaymentProcessor(blocking: Boolean = false) extends Actor with ActorLogging {
   import PaymentProcessor._
 
   override def receive: Receive = {
     case CompletePayment(amount) =>
-      if(mode == PaymentProcessor.Blocking) {
-        Thread.sleep(200)
+      if(blocking) {
+        Thread.sleep(500)
       }
 
       log.info(s"Completing Payment of $amount")

@@ -5,11 +5,11 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.Subscribe
+import akka.routing.RoundRobinPool
 import akka.util.Timeout
 import akka.pattern.ask
 
 import scala.concurrent.duration._
-import scala.util.Random
 
 object Producer extends App {
 
@@ -33,7 +33,7 @@ object Producer extends App {
   }
 
   val bursts = system.scheduler.schedule(30.seconds, 30.seconds) {
-    (1 to Random.nextInt(1000)).foreach { _ =>
+    (1 to 1000).foreach { _ =>
       val id = UUID.randomUUID()
       val request = system.actorOf(Request.props(mediator), id.toString)
 
@@ -64,7 +64,7 @@ object Consumer extends App {
 
   val validation = system.actorOf(Validation.props(), "validation")
   val orderManagement = system.actorOf(OrderManagement.props(), "order-management")
-  val paymentProcessor = system.actorOf(PaymentProcessor.props(PaymentProcessor.Normal), "payment-processor")
+  val paymentProcessor = system.actorOf(PaymentProcessor.props(), "payment-processor")
   val shipping = system.actorOf(Shipping.props(), "shipping")
 
   mediator ! Subscribe(s"Validations", group = Some("Consumer"), validation)
@@ -92,14 +92,7 @@ object Failing extends App {
   val mediator = DistributedPubSub(system).mediator
 
   val validation = system.actorOf(Validation.props(shouldFail = true), "validation")
-  val orderManagement = system.actorOf(OrderManagement.props(), "order-management")
-  val paymentProcessor = system.actorOf(PaymentProcessor.props(PaymentProcessor.Normal), "payment-processor")
-  val shipping = system.actorOf(Shipping.props(), "shipping")
-
   mediator ! Subscribe(s"Validations", group = Some("Consumer"), validation)
-  mediator ! Subscribe(s"Orders", group = Some("Consumer"), orderManagement)
-  mediator ! Subscribe(s"Payments", group = Some("Consumer"), paymentProcessor)
-  mediator ! Subscribe(s"Shipments", group = Some("Consumer"), shipping)
 
   sys.addShutdownHook {
     println("-------------")
@@ -120,15 +113,12 @@ object Blocking extends App {
 
   val mediator = DistributedPubSub(system).mediator
 
-  val validation = system.actorOf(Validation.props(), "validation")
-  val orderManagement = system.actorOf(OrderManagement.props(), "order-management")
-  val paymentProcessor = system.actorOf(PaymentProcessor.props(PaymentProcessor.Blocking), "payment-processor")
-  val shipping = system.actorOf(Shipping.props(), "shipping")
+  val paymentProcessor = system.actorOf(
+    RoundRobinPool(50).props(PaymentProcessor.props(blocking = true)),
+    "payment-processor"
+  )
 
-  mediator ! Subscribe(s"Validations", group = Some("Consumer"), validation)
-  mediator ! Subscribe(s"Orders", group = Some("Consumer"), orderManagement)
   mediator ! Subscribe(s"Payments", group = Some("Consumer"), paymentProcessor)
-  mediator ! Subscribe(s"Shipments", group = Some("Consumer"), shipping)
 
   sys.addShutdownHook {
     println("-------------")
