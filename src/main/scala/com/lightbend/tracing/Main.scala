@@ -80,7 +80,7 @@ object Consumer extends App {
   }
 }
 
-object Blocking extends App {
+object Failing extends App {
 
   for (arg <- args if arg.startsWith("-D")) {
     val keyVal = arg.replace("-D", "").split("=")
@@ -91,9 +91,9 @@ object Blocking extends App {
 
   val mediator = DistributedPubSub(system).mediator
 
-  val validation = system.actorOf(Validation.props(), "validation")
+  val validation = system.actorOf(Validation.props(shouldFail = true), "validation")
   val orderManagement = system.actorOf(OrderManagement.props(), "order-management")
-  val paymentProcessor = system.actorOf(PaymentProcessor.props(PaymentProcessor.Blocking), "payment-processor")
+  val paymentProcessor = system.actorOf(PaymentProcessor.props(PaymentProcessor.Normal), "payment-processor")
   val shipping = system.actorOf(Shipping.props(), "shipping")
 
   mediator ! Subscribe(s"Validations", group = Some("Consumer"), validation)
@@ -109,7 +109,7 @@ object Blocking extends App {
   }
 }
 
-object ExtremeBlocking extends App {
+object Blocking extends App {
 
   for (arg <- args if arg.startsWith("-D")) {
     val keyVal = arg.replace("-D", "").split("=")
@@ -122,7 +122,7 @@ object ExtremeBlocking extends App {
 
   val validation = system.actorOf(Validation.props(), "validation")
   val orderManagement = system.actorOf(OrderManagement.props(), "order-management")
-  val paymentProcessor = system.actorOf(PaymentProcessor.props(PaymentProcessor.ExtremeBlocking), "payment-processor")
+  val paymentProcessor = system.actorOf(PaymentProcessor.props(PaymentProcessor.Blocking), "payment-processor")
   val shipping = system.actorOf(Shipping.props(), "shipping")
 
   mediator ! Subscribe(s"Validations", group = Some("Consumer"), validation)

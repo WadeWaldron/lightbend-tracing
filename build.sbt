@@ -34,5 +34,5 @@ addCommandAlias("consume", "runMain com.lightbend.tracing.Consumer -Dakka.remote
 addCommandAlias("produce", "runMain com.lightbend.tracing.Producer -Dakka.remote.netty.tcp.port=2552")
 addCommandAlias("consume2", "runMain com.lightbend.tracing.Consumer -Dakka.remote.netty.tcp.port=2553")
 addCommandAlias("produce2", "runMain com.lightbend.tracing.Producer -Dakka.remote.netty.tcp.port=2554")
-addCommandAlias("consumeBlocking", "runMain com.lightbend.tracing.Blocking -Dakka.remote.netty.tcp.port=2555")
-addCommandAlias("consumeExtremeBlocking", "runMain com.lightbend.tracing.ExtremeBlocking -Dakka.remote.netty.tcp.port=2556")
+addCommandAlias("blocking", "runMain com.lightbend.tracing.Blocking -Dakka.remote.netty.tcp.port=2555")
+addCommandAlias("failing", "runMain com.lightbend.tracing.Failing -Dakka.remote.netty.tcp.port=2556")

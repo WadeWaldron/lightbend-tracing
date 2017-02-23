@@ -12,25 +12,18 @@ object PaymentProcessor {
   trait Mode
   case object Normal extends Mode
   case object Blocking extends Mode
-  case object ExtremeBlocking extends Mode
 }
 
 class PaymentProcessor(mode: Mode = PaymentProcessor.Normal) extends Actor with ActorLogging {
   import PaymentProcessor._
 
-  private var counter = 1
-
   override def receive: Receive = {
     case CompletePayment(amount) =>
-      log.info(s"Completing Payment of $amount")
-      counter += 1
-
-      if(mode == PaymentProcessor.ExtremeBlocking) {
-        Thread.sleep(200)
-      } else if(mode == PaymentProcessor.Blocking && counter % 1000 < 100) {
+      if(mode == PaymentProcessor.Blocking) {
         Thread.sleep(200)
       }
 
+      log.info(s"Completing Payment of $amount")
       sender() ! PaymentCompleted(amount)
   }
 }
