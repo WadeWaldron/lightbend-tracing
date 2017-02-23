@@ -18,12 +18,11 @@ class Request(mediator: ActorRef) extends Actor with ActorLogging {
 
   val requestId = UUID.fromString(self.path.name)
 
-  MDC.put("requestId", requestId.toString)
-
   override def receive: Actor.Receive = idle
 
   private def idle: Receive = {
     case BeginRequest(_) =>
+      MDC.put("requestId", requestId.toString)
       log.info("Begin Request")
       mediator ! Publish(s"Orders", OrderManagement.CreateOrder, sendOneMessageToEachGroup = true)
       context.become(creatingOrder(sender()))
@@ -51,6 +50,6 @@ class Request(mediator: ActorRef) extends Actor with ActorLogging {
     case Shipping.OrderShipped(orderId) =>
       log.info("Request Completed")
       origin ! RequestCompleted(requestId)
-      context.become(idle)
+      context.stop(self)
   }
 }
