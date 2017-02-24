@@ -12,6 +12,8 @@ cinnamonLogLevel := "INFO"
 
 fork in run := true
 
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xfatal-warnings")
+
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion withSources(),
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion withSources(),

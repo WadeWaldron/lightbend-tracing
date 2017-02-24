@@ -3,7 +3,6 @@ package com.lightbend.tracing
 import java.util.UUID
 
 import akka.actor.{Props, ActorLogging, Actor}
-import akka.actor.Actor.Receive
 
 import scala.util.Random
 

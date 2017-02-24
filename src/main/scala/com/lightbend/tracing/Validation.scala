@@ -18,7 +18,7 @@ class Validation(shouldFail: Boolean = false) extends Actor with ActorLogging {
   override def receive: Receive = {
     case Validate(id, amount) =>
       if(shouldFail && Random.nextInt(10) <= 1)
-        throw new IllegalStateException("Boom")
+        throw new IllegalStateException("Validation Failed.")
 
       log.info(s"Validated: $id, $amount")
       sender() ! Validated(id, amount)

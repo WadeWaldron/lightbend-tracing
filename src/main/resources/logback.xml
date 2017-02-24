@@ -13,13 +13,19 @@
         </encoder>
     </appender>
 
+    <appender name="DEFAULT-CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{HH:mm:ss} %-5level - %msg [%class] %n</pattern>
+        </encoder>
+    </appender>
+
     <logger name="com.lightbend.tracing" level="debug" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </logger>
 
-    <root level="warn">
-        <appender-ref ref="CONSOLE"/>
+    <root level="info">
+        <appender-ref ref="DEFAULT-CONSOLE"/>
     </root>
 
 </configuration>
