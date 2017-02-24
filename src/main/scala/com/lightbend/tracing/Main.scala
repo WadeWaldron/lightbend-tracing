@@ -11,14 +11,26 @@ import akka.pattern.ask
 
 import scala.concurrent.duration._
 
-object Producer extends App {
-
+abstract class BaseApp extends App {
   for (arg <- args if arg.startsWith("-D")) {
     val keyVal = arg.replace("-D", "").split("=")
     System.setProperty(keyVal(0), keyVal(1))
   }
 
   val system = ActorSystem("Tracing")
+
+  def shutdown(): Unit = {
+    println("-------------")
+    println("SHUTTING DOWN")
+    println("-------------")
+
+    system.terminate()
+  }
+
+  sys.addShutdownHook(shutdown())
+}
+
+object Producer extends BaseApp {
   import system.dispatcher
 
   val mediator = DistributedPubSub(system).mediator
@@ -41,25 +53,14 @@ object Producer extends App {
     }
   }
 
-  sys.addShutdownHook {
-    println("-------------")
-    println("SHUTTING DOWN")
-    println("-------------")
+  override def shutdown(): Unit = {
     regularTraffic.cancel()
     bursts.cancel()
-    system.terminate()
+    super.shutdown()
   }
 }
 
-object Consumer extends App {
-
-  for (arg <- args if arg.startsWith("-D")) {
-    val keyVal = arg.replace("-D", "").split("=")
-    System.setProperty(keyVal(0), keyVal(1))
-  }
-
-  val system = ActorSystem("Tracing")
-
+object Consumer extends BaseApp {
   val mediator = DistributedPubSub(system).mediator
 
   val validation = system.actorOf(Validation.props(), "validation")
@@ -71,46 +72,16 @@ object Consumer extends App {
   mediator ! Subscribe(s"Orders", group = Some("Consumer"), orderManagement)
   mediator ! Subscribe(s"Payments", group = Some("Consumer"), paymentProcessor)
   mediator ! Subscribe(s"Shipments", group = Some("Consumer"), shipping)
-
-  sys.addShutdownHook {
-    println("-------------")
-    println("SHUTTING DOWN")
-    println("-------------")
-    system.terminate()
-  }
 }
 
-object Failing extends App {
-
-  for (arg <- args if arg.startsWith("-D")) {
-    val keyVal = arg.replace("-D", "").split("=")
-    System.setProperty(keyVal(0), keyVal(1))
-  }
-
-  val system = ActorSystem("Tracing")
-
+object Failing extends BaseApp {
   val mediator = DistributedPubSub(system).mediator
 
   val validation = system.actorOf(Validation.props(shouldFail = true), "validation")
   mediator ! Subscribe(s"Validations", group = Some("Consumer"), validation)
-
-  sys.addShutdownHook {
-    println("-------------")
-    println("SHUTTING DOWN")
-    println("-------------")
-    system.terminate()
-  }
 }
 
-object Blocking extends App {
-
-  for (arg <- args if arg.startsWith("-D")) {
-    val keyVal = arg.replace("-D", "").split("=")
-    System.setProperty(keyVal(0), keyVal(1))
-  }
-
-  val system = ActorSystem("Tracing")
-
+object Blocking extends BaseApp {
   val mediator = DistributedPubSub(system).mediator
 
   val paymentProcessor = system.actorOf(
@@ -119,12 +90,5 @@ object Blocking extends App {
   )
 
   mediator ! Subscribe(s"Payments", group = Some("Consumer"), paymentProcessor)
-
-  sys.addShutdownHook {
-    println("-------------")
-    println("SHUTTING DOWN")
-    println("-------------")
-    system.terminate()
-  }
 }
 

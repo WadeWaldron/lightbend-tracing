@@ -1,6 +1,5 @@
 name := """Tracing"""
 
-//scalaVersion := "2.11.7"
 scalaVersion := "2.12.1"
 
 val akkaVersion = "2.4.16"
