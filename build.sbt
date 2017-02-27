@@ -10,6 +10,8 @@ cinnamon in run := true
 cinnamon in test := true
 cinnamonLogLevel := "INFO"
 
+resolvers += "lightbend-contrail" at "https://dl.bintray.com/typesafe/commercial-maven-releases"
+
 fork in run := true
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xfatal-warnings")
