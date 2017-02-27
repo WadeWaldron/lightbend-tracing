@@ -6,6 +6,11 @@ It leverages Akka Distributed Pub Sub to create a cluster of applications.
 By using the Distributed Pub Sub we are able to demonstrate how the various
 features of the application work within a cluster.
 
+This application is currently configured to run against the Lightbend Production
+Suite sandbox. For more information see here:
+
+https://developer.lightbend.com/docs/monitoring/latest/sandbox/start.html
+
 It consists of 4 applications.
 
 ## Applications
