@@ -32,6 +32,10 @@ for a period of time before continuing. This can be used to demonstrate
 the effect of a blocking operation on things such as mailbox sizes, dispatchers
 etc.
 
+### Blocking Router
+A variation on the Blocking version, this version leverages a Router over the
+blocking Actor. It can be run with `sbt blockingRouter`
+
 ### Failing
 This is another variation on the consumer. It can be run with `sbt failing`.
 This will consume messages but a certain percentage of those messages will fail.

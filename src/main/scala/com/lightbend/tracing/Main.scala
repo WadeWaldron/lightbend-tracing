@@ -100,6 +100,17 @@ object Blocking extends BaseApp {
   val mediator = DistributedPubSub(system).mediator
 
   val paymentProcessor = system.actorOf(
+    PaymentProcessor.props(blocking = true),
+    "payment-processor"
+  )
+
+  mediator ! Subscribe(s"Payments", group = Some("Consumer"), paymentProcessor)
+}
+
+object BlockingRouter extends BaseApp {
+  val mediator = DistributedPubSub(system).mediator
+
+  val paymentProcessor = system.actorOf(
     RoundRobinPool(50).props(PaymentProcessor.props(blocking = true)),
     "payment-processor"
   )
